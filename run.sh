@@ -1,18 +1,21 @@
 #!/bin/bash
 
+#
+source ./venv/bin/activate
+
 # log
 log_root='./logs'
 mkdir -p ${log_root}
 date=`date +%Y%m%d_%H%M`
 log_file=${log_root}/${date}.log
 
-
 #
 #SQUAD_VER=squad1
 SQUAD_VER=squad2
 
 #
-BERT_BASE_DIR=./models/uncased_L-12_H-768_A-12
+BERT_BASE_ROOT=../08_BERT_MODELS
+BERT_MODEL=${BERT_BASE_ROOT}/uncased_L-12_H-768_A-12
 
 #
 EN_TRAIN=False

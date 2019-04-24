@@ -33,7 +33,7 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 
-gpu_number = 0
+gpu_number = 3
 os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_number)
 
 flags = tf.flags
