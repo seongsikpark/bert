@@ -15,7 +15,8 @@ SQUAD_VER=squad2
 
 #
 BERT_BASE_ROOT=../08_BERT_MODELS
-BERT_MODEL=${BERT_BASE_ROOT}/uncased_L-12_H-768_A-12
+BERT_BASE_DIR=${BERT_BASE_ROOT}/uncased_L-12_H-768_A-12
+
 
 #
 EN_TRAIN=False
@@ -62,10 +63,10 @@ OUTPUT_NULL_LOG_ODDS='null_odds_test.json'
 THRESH=-3.414
 
 #
-#APPEND_MODE='None'
+APPEND_MODE='None'
 #APPEND_MODE='PRE'
 #APPEND_MODE='POST'
-APPEND_MODE='ALL'
+#APPEND_MODE='ALL'
 
 #
 NUM_APP_PARA=0
@@ -83,7 +84,7 @@ MAX_SEQ_LEN=384
 STRIDE=64
 
 #
-if [${APPEND_MODE} != 'None']
+if ! [ ${APPEND_MODE} = 'None' ]
 then
     log_file=${log_root}/${date}_a-${APPEND_MODE}-${NUM_APP_PARA}_l-${MAX_SEQ_LEN}_s-${STRIDE}.log
 fi
