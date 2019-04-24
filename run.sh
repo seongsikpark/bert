@@ -80,7 +80,10 @@ MAX_SEQ_LEN=384
 STRIDE=64
 
 #
-log_file=${log_root}/${date}_a-${APPEND_MODE}-${NUM_APP_PARA}_l-${MAX_SEQ_LEN}_s-${STRIDE}.log
+if [${APPEND_MODE} != 'None']
+then
+    log_file=${log_root}/${date}_a-${APPEND_MODE}-${NUM_APP_PARA}_l-${MAX_SEQ_LEN}_s-${STRIDE}.log
+fi
 
 
 if [ ${ONLY_EVAL} = False ]
