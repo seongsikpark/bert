@@ -56,8 +56,8 @@ OUTPUT_NBEST_FILE='nbest_predictions_test.json'
 OUTPUT_NULL_LOG_ODDS='null_odds_test.json'
 
 #
-MAX_NUM_APP_PARA=50
-#NUM_APP_PARA=6
+#MAX_NUM_APP_PARA=0
+NUM_APP_PARA=10
 
 #
 APPEND_MODE='PRE'

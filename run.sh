@@ -59,11 +59,13 @@ OUTPUT_NULL_LOG_ODDS='null_odds_test.json'
 THRESH=-3.414
 
 #
-NUM_APP_PARA=0
-APPEND_MODE='PRE'
+#APPEND_MODE='None'
+#APPEND_MODE='PRE'
 #APPEND_MODE='POST'
+APPEND_MODE='ALL'
 
-
+#
+NUM_APP_PARA=0
 
 #
 VERBOSE=True
@@ -72,6 +74,13 @@ VERBOSE=True
 #
 NUM_EVAL_EXAMPLES=-1
 #NUM_EVAL_EXAMPLES=10
+
+#
+MAX_SEQ_LEN=384
+STRIDE=64
+
+#
+log_file=${log_root}/${date}_a-${APPEND_MODE}-${NUM_APP_PARA}_l-${MAX_SEQ_LEN}_s-${STRIDE}.log
 
 
 if [ ${ONLY_EVAL} = False ]
@@ -90,9 +99,9 @@ then
         --predict_file=${PREDICT_FILE} \
         --train_batch_size=11 \
         --learning_rate=3e-5 \
-        --num_train_epochs=4.0 \
-        --max_seq_length=384 \
-        --doc_stride=128 \
+        --num_train_epochs=2.0 \
+        --max_seq_length=${MAX_SEQ_LEN} \
+        --doc_stride=${STRIDE} \
         --output_dir=${OUTPUT_DIR} \
         --version_2_with_negative=${VERSION_2_W_NEG} \
         --null_score_diff_threshold=${THRESH} \
@@ -101,7 +110,7 @@ then
         --append_mode=${APPEND_MODE}\
         --verbose=${VERBOSE}\
         --num_eval_examples=${NUM_EVAL_EXAMPLES}\
-        --predict_batch_size=8; } 2>&1 | tee ${log_file}
+        --predict_batch_size=1; } 2>&1 | tee ${log_file}
 
     echo 'log_file: '${log_file}
 fi

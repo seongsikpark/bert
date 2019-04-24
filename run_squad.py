@@ -416,50 +416,59 @@ def read_squad_examples(input_file, is_training):
 
     #
     print('append paragraphs')
-    if not FLAGS.num_append_paragraphs == 0:
-        if FLAGS.append_mode=='PRE':
-            for (idx, example) in enumerate(examples):
-                text_title = example.text_title
-                paragraph_id = example.paragraph_id
+    #if not FLAGS.num_append_paragraphs == 0:
+    if FLAGS.append_mode=='PRE':
+        print('Append mode: PRE')
+        for (idx, example) in enumerate(examples):
+            text_title = example.text_title
+            paragraph_id = example.paragraph_id
 
-                start_index_append=max(0,paragraph_id-FLAGS.num_append_paragraphs)
-                end_index_append=paragraph_id
+            start_index_append=max(0,paragraph_id-FLAGS.num_append_paragraphs)
+            end_index_append=paragraph_id
 
-                example.doc_tokens=[]
-                for idx_append in range(start_index_append,end_index_append+1):
-                    example.doc_tokens = example.doc_tokens+documents[text_title][idx_append]
+            example.doc_tokens=[]
+            for idx_append in range(start_index_append,end_index_append+1):
+                example.doc_tokens = example.doc_tokens+documents[text_title][idx_append]
+    elif FLAGS.append_mode=='POST':
+        print('Append mode: POST')
+        for (idx, example) in enumerate(examples):
+            #print("%s: %s"%(example.text_title,example.paragraph_id))
+            #print(idx)
 
+            text_title = example.text_title
+            paragraph_id = example.paragraph_id
 
-        elif FLAGS.append_mode=='POST':
-            for (idx, example) in enumerate(examples):
-                #print("%s: %s"%(example.text_title,example.paragraph_id))
-                #print(idx)
+            num_append_paragraphs=FLAGS.num_append_paragraphs
 
-                text_title = example.text_title
-                paragraph_id = example.paragraph_id
+            #if paragraph_id < num_paragraph[text_title]-num_append_paragraphs:
+            #print(example.doc_tokens.append(documents[text_title][paragraph_id+1]))
+            #print(documents[text_title][paragraph_id])
+            #print(documents[text_title][paragraph_id+1])
+            #print(type(example.doc_tokens))
+            #print(example.doc_tokens+documents[text_title][paragraph_id+1])
+            #example.doc_tokens = example.doc_tokens
 
-                num_append_paragraphs=FLAGS.num_append_paragraphs
+            for idx_append in range(1,num_append_paragraphs+1):
+                paragraph_id_append = paragraph_id + idx_append
+                if paragraph_id_append == num_paragraph[text_title]:
+                    break
+                example.doc_tokens = example.doc_tokens+documents[text_title][paragraph_id_append]
+            #    example.doc_tokens = example.doc_tokens.append(documents[text_title][paragraph_id+1])
+    elif FLAGS.append_mode=='ALL':
+        print('Append mode: ALL')
+        for (idx, example) in enumerate(examples):
+            text_title = example.text_title
 
-                #if paragraph_id < num_paragraph[text_title]-num_append_paragraphs:
-                #print(example.doc_tokens.append(documents[text_title][paragraph_id+1]))
-                #print(documents[text_title][paragraph_id])
-                #print(documents[text_title][paragraph_id+1])
-                #print(type(example.doc_tokens))
-                #print(example.doc_tokens+documents[text_title][paragraph_id+1])
-                #example.doc_tokens = example.doc_tokens
+            example.doc_tokens=[]
 
-                for idx_append in range(1,num_append_paragraphs+1):
-                    paragraph_id_append = paragraph_id + idx_append
-                    if paragraph_id_append == num_paragraph[text_title]:
-                        break
-                    example.doc_tokens = example.doc_tokens+documents[text_title][paragraph_id_append]
-                #    example.doc_tokens = example.doc_tokens.append(documents[text_title][paragraph_id+1])
-        else:
-            print('not defined append paragraphs mode')
-            assert False
+            #for idx_append in range(num_paragraph[text_title]):
 
-
-
+            for (idx_append, paragraph) in enumerate(documents[text_title]):
+                example.doc_tokens=example.doc_tokens+paragraph
+    else:
+        print('Append mode: None')
+        #print('not defined append paragraphs mode')
+        #assert False
 
 
     return examples
@@ -517,27 +526,28 @@ def convert_examples_to_features(examples, tokenizer, max_seq_length,
         doc_spans = []
         start_offset = 0
 
-        # original
-        # allow duplicate reading
-        #while start_offset < len(all_doc_tokens):
-        #    length = len(all_doc_tokens) - start_offset
-        #    if length > max_tokens_for_doc:
-        #        length = max_tokens_for_doc
-        #    doc_spans.append(_DocSpan(start=start_offset, length=length))
-        #    if start_offset + length == len(all_doc_tokens):
-        #        break
-        #    start_offset += min(length, doc_stride)
-
-        # sspark
-        # not allow duplicate reading
-        while start_offset < len(all_doc_tokens):
-            length = len(all_doc_tokens) - start_offset
-            if length > max_tokens_for_doc:
-                length = max_tokens_for_doc
-            doc_spans.append(_DocSpan(start=start_offset, length=length))
-            if start_offset + length == len(all_doc_tokens):
-                break
-            start_offset += length
+        if doc_stride > 0:
+            # original
+            # allow duplicate reading
+            while start_offset < len(all_doc_tokens):
+                length = len(all_doc_tokens) - start_offset
+                if length > max_tokens_for_doc:
+                    length = max_tokens_for_doc
+                doc_spans.append(_DocSpan(start=start_offset, length=length))
+                if start_offset + length == len(all_doc_tokens):
+                    break
+                start_offset += min(length, doc_stride)
+        else:
+            # sspark
+            # not allow duplicate reading
+            while start_offset < len(all_doc_tokens):
+                length = len(all_doc_tokens) - start_offset
+                if length > max_tokens_for_doc:
+                    length = max_tokens_for_doc
+                doc_spans.append(_DocSpan(start=start_offset, length=length))
+                if start_offset + length == len(all_doc_tokens):
+                    break
+                start_offset += length
 
 
         #print('start_offset: %d'%start_offset)
