@@ -10,8 +10,8 @@ date=`date +%Y%m%d_%H%M`
 log_file=${log_root}/${date}.log
 
 #
-#SQUAD_VER=squad1
-SQUAD_VER=squad2
+SQUAD_VER=squad1
+#SQUAD_VER=squad2
 
 #
 BERT_BASE_ROOT=../08_BERT_MODELS
@@ -47,8 +47,15 @@ else
 fi
 
 #PRE_TRAINED_DIR='./output_squad2_train_b11'
-OUTPUT_DIR='./output_squad2_b11'
+#OUTPUT_DIR='./output_squad2_b11'
 #OUTPUT_DIR='./output_squad2_b11_e4'
+#OUTPUT_DIR='./output_squad1_b-11_l-384_s-64'
+#OUTPUT_DIR='./output_squad1_b-11_l-384_s-4'
+#OUTPUT_DIR='./output_squad1_b-11_l-384_s-1'
+#OUTPUT_DIR='./output_squad1_b-11_l-384_s-128_a-post-1'
+OUTPUT_DIR='./output_squad1_b-11_l-384_s-128_a-post-3'
+#OUTPUT_DIR='./output_squad1_b-11_l-384_s-128_a-all'
+#OUTPUT_DIR='./output_squad1_b-11_l-384_s-128_a-pre-1'
 
 INIT_CHECKPOINT=$BERT_BASE_DIR/bert_model.ckpt
 #INIT_CHECKPOINT=${PRE_TRAINED_DIR}/model.ckpt
@@ -69,7 +76,8 @@ APPEND_MODE='None'
 #APPEND_MODE='ALL'
 
 #
-NUM_APP_PARA=0
+#NUM_APP_PARA=0
+NUM_APP_PARA=1
 
 #
 VERBOSE=True
@@ -81,7 +89,7 @@ NUM_EVAL_EXAMPLES=-1
 
 #
 MAX_SEQ_LEN=384
-STRIDE=64
+STRIDE=128
 
 #
 if ! [ ${APPEND_MODE} = 'None' ]

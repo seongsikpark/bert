@@ -296,6 +296,33 @@ def read_squad_examples(input_file, is_training):
 
     documents = collections.OrderedDict()
 
+    #
+    for entry in input_data:
+        title = entry['title']
+        paragraphs=[]
+
+        for paragraph in entry["paragraphs"]:
+            paragraphs.append(paragraph["context"])
+
+        documents[title] = paragraphs
+
+    if FLAGS.append_mode=='PRE':
+        print('Append paragraph mode: PRE')
+    elif FLAGS.append_mode=='POST':
+        print('Append paragraph mode: POST')
+    elif FLAGS.append_mode=='ALL':
+        print('Append paragraph mode: ALL')
+        all_paragraph=collections.OrderedDict()
+        for key, document in documents.items():
+            tmp=''
+            for paragraph in document:
+                tmp = tmp + paragraph
+            all_paragraph[key] = tmp
+    else:
+        print('Append paragraph mode: NONE')
+
+
+    #
     for entry in input_data:
         ## print title
         #print(entry["title"])
@@ -304,8 +331,42 @@ def read_squad_examples(input_file, is_training):
         document = []
         paragraph_id = 0
 
-        for paragraph in entry["paragraphs"]:
-            paragraph_text = paragraph["context"]
+        for (p_idx,paragraph) in enumerate(entry["paragraphs"]):
+            paragraph_text = ''
+            paragraph_offset_char = 0
+
+            # append paragraph
+            if FLAGS.append_mode=='PRE':
+
+                start_index_append=max(0,p_idx-FLAGS.num_append_paragraphs)
+                end_index_append=p_idx+1
+
+                for idx_append in range(start_index_append,end_index_append):
+                    paragraph_text = paragraph_text + documents[title][idx_append]
+
+                for idx_append in range(start_index_append,end_index_append-1):
+                    paragraph_offset_char = paragraph_offset_char + len(documents[title][idx_append])
+
+            elif FLAGS.append_mode=='POST':
+
+                start_index_append=p_idx
+                end_index_append=min(len(entry['paragraphs']),p_idx+FLAGS.num_append_paragraphs)
+
+                for idx_append in range(start_index_append,end_index_append):
+                    paragraph_text = paragraph_text + documents[title][idx_append]
+
+            elif FLAGS.append_mode=='ALL':
+
+                start_index_append=max(0,p_idx-FLAGS.num_append_paragraphs)
+                end_index_append=p_idx+1
+
+                paragraph_text = all_paragraph[title]
+
+                for idx_append in range(start_index_append,end_index_append-1):
+                    paragraph_offset_char = paragraph_offset_char + len(documents[title][idx_append])
+
+            #paragraph_text = paragraph["context"]
+
             doc_tokens = []
             char_to_word_offset = []
             prev_is_whitespace = True
@@ -337,22 +398,21 @@ def read_squad_examples(input_file, is_training):
                     if not is_impossible:
                         answer = qa["answers"][0]
                         orig_answer_text = answer["text"]
-                        answer_offset = answer["answer_start"]
+                        answer_offset = answer["answer_start"] + paragraph_offset_char
                         answer_length = len(orig_answer_text)
                         start_position = char_to_word_offset[answer_offset]
-                        end_position = char_to_word_offset[
-                            answer_offset + answer_length -
-                            1]
+                        end_position = char_to_word_offset[answer_offset + answer_length - 1]
+
+                        #print(answer_offset)
+                        #print(start_position)
                         # Only add answers where the text can be exactly recovered from the
                         # document. If this CAN'T happen it's likely due to weird Unicode
                         # stuff so we will just skip the example.
                         #
                         # Note that this means for training mode, every example is NOT
                         # guaranteed to be preserved.
-                        actual_text = " ".join(
-                            doc_tokens[start_position:(end_position + 1)])
-                        cleaned_answer_text = " ".join(
-                            tokenization.whitespace_tokenize(orig_answer_text))
+                        actual_text = " ".join(doc_tokens[start_position:(end_position + 1)])
+                        cleaned_answer_text = " ".join(tokenization.whitespace_tokenize(orig_answer_text))
                         if actual_text.find(cleaned_answer_text) == -1:
                             tf.logging.warning(
                                 "Could not find answer: '%s' vs. '%s'",
@@ -376,99 +436,95 @@ def read_squad_examples(input_file, is_training):
                 )
                 examples.append(example)
 
-                #print(example.__str__())
-                #example.__stat__()
+            #document.append(doc_tokens)
+            #paragraph_id = paragraph_id + 1
 
-            #document.append(list(paragraph_text))
-            document.append(doc_tokens)
-            paragraph_id = paragraph_id + 1
-
-        documents[title] = document
+        #documents[title] = document
 
 
 
-    # stat - SQuAD
-    num_paragraph = collections.OrderedDict()
-    num_word = []
-
-    for title, document in documents.items():
-        #print(title)
-
-        #print('# of paragraph: %d'%(len(document)))
-        #num_paragraph.append(len(document))
-        num_paragraph[title]=len(document)
-
-
-        for paragraph in document:
-            #print("%s"%" ".join([tokenization.printable_text(x) for x in paragraph]))
-            #print('# of words (tokens): %d'%(len(paragraph)))
-            num_word.append(len(paragraph))
-
-
-    #plt.subplot(121)
-    #plt.hist(num_paragraph)
-    #plt.subplot(122)
-    #plt.hist(num_word)
-    #plt.show()
+#    # stat - SQuAD
+#    num_paragraph = collections.OrderedDict()
+#    num_word = []
+#
+#    for title, document in documents.items():
+#        #print(title)
+#
+#        #print('# of paragraph: %d'%(len(document)))
+#        #num_paragraph.append(len(document))
+#        num_paragraph[title]=len(document)
+#
+#
+#        for paragraph in document:
+#            #print("%s"%" ".join([tokenization.printable_text(x) for x in paragraph]))
+#            #print('# of words (tokens): %d'%(len(paragraph)))
+#            num_word.append(len(paragraph))
+#
+#
+#    #plt.subplot(121)
+#    #plt.hist(num_paragraph)
+#    #plt.subplot(122)
+#    #plt.hist(num_word)
+#    #plt.show()
 
 
 
 
-    #
-    print('append paragraphs')
-    #if not FLAGS.num_append_paragraphs == 0:
-    if FLAGS.append_mode=='PRE':
-        print('Append mode: PRE')
-        for (idx, example) in enumerate(examples):
-            text_title = example.text_title
-            paragraph_id = example.paragraph_id
-
-            start_index_append=max(0,paragraph_id-FLAGS.num_append_paragraphs)
-            end_index_append=paragraph_id
-
-            example.doc_tokens=[]
-            for idx_append in range(start_index_append,end_index_append+1):
-                example.doc_tokens = example.doc_tokens+documents[text_title][idx_append]
-    elif FLAGS.append_mode=='POST':
-        print('Append mode: POST')
-        for (idx, example) in enumerate(examples):
-            #print("%s: %s"%(example.text_title,example.paragraph_id))
-            #print(idx)
-
-            text_title = example.text_title
-            paragraph_id = example.paragraph_id
-
-            num_append_paragraphs=FLAGS.num_append_paragraphs
-
-            #if paragraph_id < num_paragraph[text_title]-num_append_paragraphs:
-            #print(example.doc_tokens.append(documents[text_title][paragraph_id+1]))
-            #print(documents[text_title][paragraph_id])
-            #print(documents[text_title][paragraph_id+1])
-            #print(type(example.doc_tokens))
-            #print(example.doc_tokens+documents[text_title][paragraph_id+1])
-            #example.doc_tokens = example.doc_tokens
-
-            for idx_append in range(1,num_append_paragraphs+1):
-                paragraph_id_append = paragraph_id + idx_append
-                if paragraph_id_append == num_paragraph[text_title]:
-                    break
-                example.doc_tokens = example.doc_tokens+documents[text_title][paragraph_id_append]
-            #    example.doc_tokens = example.doc_tokens.append(documents[text_title][paragraph_id+1])
-    elif FLAGS.append_mode=='ALL':
-        print('Append mode: ALL')
-        for (idx, example) in enumerate(examples):
-            text_title = example.text_title
-
-            example.doc_tokens=[]
-
-            #for idx_append in range(num_paragraph[text_title]):
-
-            for (idx_append, paragraph) in enumerate(documents[text_title]):
-                example.doc_tokens=example.doc_tokens+paragraph
-    else:
-        print('Append mode: None')
-        #print('not defined append paragraphs mode')
-        #assert False
+#    #
+#    print('append paragraphs')
+#    #if not FLAGS.num_append_paragraphs == 0:
+#    if FLAGS.append_mode=='PRE':
+#        print('Append mode: PRE')
+#        for (idx, example) in enumerate(examples):
+#            text_title = example.text_title
+#            paragraph_id = example.paragraph_id
+#
+#            start_index_append=max(0,paragraph_id-FLAGS.num_append_paragraphs)
+#            end_index_append=paragraph_id
+#
+#            example.doc_tokens=[]
+#            for idx_append in range(start_index_append,end_index_append+1):
+#                example.doc_tokens = example.doc_tokens+documents[text_title][idx_append]
+#    elif FLAGS.append_mode=='POST':
+#        print('Append mode: POST')
+#        for (idx, example) in enumerate(examples):
+#            #print("%s: %s"%(example.text_title,example.paragraph_id))
+#            #print(idx)
+#
+#            text_title = example.text_title
+#            paragraph_id = example.paragraph_id
+#
+#            num_append_paragraphs=FLAGS.num_append_paragraphs
+#
+#            #if paragraph_id < num_paragraph[text_title]-num_append_paragraphs:
+#            #print(example.doc_tokens.append(documents[text_title][paragraph_id+1]))
+#            #print(documents[text_title][paragraph_id])
+#            #print(documents[text_title][paragraph_id+1])
+#            #print(type(example.doc_tokens))
+#            #print(example.doc_tokens+documents[text_title][paragraph_id+1])
+#            #example.doc_tokens = example.doc_tokens
+#
+#            for idx_append in range(1,num_append_paragraphs+1):
+#                paragraph_id_append = paragraph_id + idx_append
+#                if paragraph_id_append == num_paragraph[text_title]:
+#                    break
+#                example.doc_tokens = example.doc_tokens+documents[text_title][paragraph_id_append]
+#            #    example.doc_tokens = example.doc_tokens.append(documents[text_title][paragraph_id+1])
+#    elif FLAGS.append_mode=='ALL':
+#        print('Append mode: ALL')
+#        for (idx, example) in enumerate(examples):
+#            text_title = example.text_title
+#
+#            example.doc_tokens=[]
+#
+#            #for idx_append in range(num_paragraph[text_title]):
+#
+#            for (idx_append, paragraph) in enumerate(documents[text_title]):
+#                example.doc_tokens=example.doc_tokens+paragraph
+#    else:
+#        print('Append mode: None')
+#        #print('not defined append paragraphs mode')
+#        #assert False
 
 
     return examples
@@ -507,8 +563,7 @@ def convert_examples_to_features(examples, tokenizer, max_seq_length,
         if is_training and not example.is_impossible:
             tok_start_position = orig_to_tok_index[example.start_position]
             if example.end_position < len(example.doc_tokens) - 1:
-                tok_end_position = orig_to_tok_index[
-                                       example.end_position + 1] - 1
+                tok_end_position = orig_to_tok_index[example.end_position + 1] - 1
             else:
                 tok_end_position = len(all_doc_tokens) - 1
             (tok_start_position, tok_end_position) = _improve_answer_span(
@@ -597,8 +652,7 @@ def convert_examples_to_features(examples, tokenizer, max_seq_length,
             assert len(input_mask) == max_seq_length
             assert len(segment_ids) == max_seq_length
 
-            #start_position = None
-            start_position = doc_span.start
+            start_position = None
             end_position = None
 
             if is_training and not example.is_impossible:
