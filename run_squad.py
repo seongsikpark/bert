@@ -357,7 +357,7 @@ def read_squad_examples(input_file, is_training):
 
             elif FLAGS.append_mode=='ALL':
 
-                start_index_append=max(0,p_idx-FLAGS.num_append_paragraphs)
+                start_index_append=0
                 end_index_append=p_idx+1
 
                 paragraph_text = all_paragraph[title]
