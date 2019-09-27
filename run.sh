@@ -49,12 +49,21 @@ fi
 #PRE_TRAINED_DIR='./output_squad2_train_b11'
 #OUTPUT_DIR='./output_squad2_b11'
 #OUTPUT_DIR='./output_squad2_b11_e4'
+#OUTPUT_DIR='./output_squad1_b11'
+OUTPUT_DIR='./output_squad1_b-11_l-384_s-128'
 #OUTPUT_DIR='./output_squad1_b-11_l-384_s-64'
 #OUTPUT_DIR='./output_squad1_b-11_l-384_s-4'
 #OUTPUT_DIR='./output_squad1_b-11_l-384_s-1'
 #OUTPUT_DIR='./output_squad1_b-11_l-384_s-128_a-post-1'
-OUTPUT_DIR='./output_squad1_b-11_l-384_s-128_a-post-3'
-#OUTPUT_DIR='./output_squad1_b-11_l-384_s-128_a-all'
+#OUTPUT_DIR='./output_squad1_b-11_l-384_s-128_a-post-3'
+#OUTPUT_DIR='./output_squad1_b-11_l-384_s-128_a-post-5'
+#OUTPUT_DIR='./output_squad1_b-11_l-384_s-128_a-post-5-re'
+#OUTPUT_DIR='./output_squad1_b-11_l-384_s-128_a-post-7'
+#OUTPUT_DIR='./output_squad1_b-11_l-384_s-128_a-post-7-re'
+#OUTPUT_DIR='./output_squad1_b-11_l-384_s-128_a-post-7-re-re'
+#OUTPUT_DIR='./output_squad1_b-11_l-384_s-128_a-post-9'
+
+#OUTPUT_DIR='./output_squad1_b-11_l-384_s-128_a-all-re'
 #OUTPUT_DIR='./output_squad1_b-11_l-384_s-128_a-pre-1'
 
 INIT_CHECKPOINT=$BERT_BASE_DIR/bert_model.ckpt
@@ -76,16 +85,16 @@ APPEND_MODE='None'
 #APPEND_MODE='ALL'
 
 #
-#NUM_APP_PARA=0
-NUM_APP_PARA=1
+NUM_APP_PARA=9
+#NUM_APP_PARA=7
 
 #
 VERBOSE=True
 #VERBOSE=False
 
 #
-NUM_EVAL_EXAMPLES=-1
-#NUM_EVAL_EXAMPLES=10
+#NUM_EVAL_EXAMPLES=-1
+NUM_EVAL_EXAMPLES=100
 
 #
 MAX_SEQ_LEN=384
